@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'productos_screen.dart';
+import 'carrito_screen.dart';
+import 'perfil_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,208 +11,242 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String nombreUsuario = '';
-  final user = FirebaseAuth.instance.currentUser;
+  int _index = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    _cargarNombre();
-  }
-
-  Future<void> _cargarNombre() async {
-    if (user != null) {
-      final ref = FirebaseDatabase.instance.ref('usuarios/${user!.uid}');
-      final snapshot = await ref.get();
-      if (snapshot.exists) {
-        setState(() {
-          nombreUsuario = snapshot.child('nombre').value.toString();
-        });
-      }
-    }
-  }
+  final List<Widget> _pages = const [
+    HomeTab(),
+    ProductosScreen(),
+    CarritoScreen(),
+    PerfilScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF6487E4),
-        elevation: 0,
-        title: Row(
-          children: [
-            Image.asset('assets/logo.png', height: 40),
-            const SizedBox(width: 8),
-            const Text('Fierros Cocharcas'),
-          ],
-        ),
-        actions: [
-            IconButton(
-              icon: const Icon(Icons.shopping_cart_outlined),
-              onPressed: () {},
-            ),
-            const SizedBox(width: 10),
-        ],
-      ),
-
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // --- SALUDO ---
-          Text(
-            nombreUsuario.isEmpty
-                ? 'Hola, Cliente 👋'
-                : 'Hola, $nombreUsuario 👋',
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            '¡Bienvenido de nuevo! Aprovecha las mejores ofertas del día.',
-            style: TextStyle(color: Colors.black54),
-          ),
-          const SizedBox(height: 20),
-
-          // --- BANNER DE OFERTA ---
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF9F888),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.electrical_services, size: 45),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: Text(
-                    '¡Gran oferta en herramientas eléctricas! Hasta 50% de descuento en taladros, sierras y más.',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 25),
-
-          // --- MARCAS ---
-          const Text(
-            'Marcas destacadas',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 70,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                _marcaItem('assets/cat.png', 'CAT'),
-                _marcaItem('assets/stanley.png', 'Stanley'),
-                _marcaItem('assets/bosch.png', 'Bosch'),
-                _marcaItem('assets/philips.png', 'Philips'),
-                _marcaItem('assets/dewalt.png', 'DeWalt'),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 25),
-          const Text(
-            'Productos populares',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 0.75,
-            ),
-            itemCount: 4,
-            itemBuilder: (context, index) => _productoCard(
-              nombre: 'Taladro Stanley Pro ${index + 1}',
-              precio: 149.99 + index * 10,
-              imagen: 'assets/product${index + 1}.png',
-            ),
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
-
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF6487E4),
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Abrir chat de atención al cliente')),
-          );
-        },
-        label: const Text('WhatsApp'),
-        icon: const Icon(Icons.chat),
-      ),
-
+      body: _pages[_index],
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _index,
+        onTap: (i) => setState(() => _index = i),
         selectedItemColor: const Color(0xFF6487E4),
         unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.white,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-          BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Órdenes'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Carrito'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.home_filled), label: "Inicio"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.storefront_outlined), label: "Productos"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_cart_outlined), label: "Carrito"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline), label: "Perfil"),
         ],
       ),
     );
   }
+}
 
-  Widget _marcaItem(String ruta, String nombre) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 25,
-            backgroundColor: const Color(0xFFF9F888),
-            child: Image.asset(ruta, height: 30),
-          ),
-          const SizedBox(height: 5),
-          Text(nombre, style: const TextStyle(fontSize: 12)),
-        ],
+/// 📱 Vista principal de inicio
+class HomeTab extends StatelessWidget {
+  const HomeTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        title: const Text("Fierros Cocharcas"),
+        backgroundColor: const Color(0xFF6487E4),
+        foregroundColor: Colors.white,
+        elevation: 4,
       ),
-    );
-  }
-
-  Widget _productoCard({
-    required String nombre,
-    required double precio,
-    required String imagen,
-  }) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      elevation: 3,
-      child: Column(
-        children: [
-          Expanded(
-            child: Image.asset(imagen, fit: BoxFit.cover),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                Text(nombre,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 13),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                Text('S/. ${precio.toStringAsFixed(2)}',
-                    style: const TextStyle(color: Colors.grey)),
-              ],
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "¡Bienvenido!",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            const Text(
+              "Encuentra los mejores fierros, herramientas y materiales de construcción a precios competitivos.",
+              style: TextStyle(fontSize: 15, color: Colors.black54),
+            ),
+            const SizedBox(height: 20),
+
+            // 🏷️ Banner principal
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                alignment: Alignment.bottomLeft,
+                children: [
+                  Image.asset(
+                    "lib/assets/banners/oferta1.png",
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 180,
+                  ),
+                  Container(
+                    width: double.infinity,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withOpacity(0.4),
+                          Colors.transparent
+                        ],
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                      ),
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      "Ofertas especiales 🔧",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                              blurRadius: 6,
+                              color: Colors.black54,
+                              offset: Offset(1, 1))
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 25),
+
+            const Text(
+              "Marcas destacadas",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+
+            // 🧰 Marcas horizontales
+            SizedBox(
+              height: 60,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  marcaItem("lib/assets/marcas/stanley.png"),
+                  marcaItem("lib/assets/marcas/cat.png"),
+                  marcaItem("lib/assets/marcas/aceros.png"),
+                  marcaItem("lib/assets/marcas/sider.png"),
+                ],
+              ),
+            ),
+            const SizedBox(height: 30),
+
+            const Text(
+              "Productos populares 🔥",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+
+            // 🧱 Productos destacados (solo muestra ejemplo visual)
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: 4,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.75,
+              ),
+              itemBuilder: (context, i) {
+                final productos = [
+                  {"nombre": "Taladro Stanley", "precio": "159.90"},
+                  {"nombre": "Cincel Industrial", "precio": "39.90"},
+                  {"nombre": "Disco de Corte CAT", "precio": "14.50"},
+                  {"nombre": "Juego de Llaves", "precio": "120.00"},
+                ];
+
+                final p = productos[i];
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.shade300,
+                        blurRadius: 5,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(12)),
+                          child: Image.asset(
+                            "lib/assets/productos/product.png",
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              p["nombre"]!,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "S/. ${p["precio"]}",
+                              style: const TextStyle(color: Colors.black54),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
+
+  /// 🔹 Componente para mostrar las marcas
+  Widget marcaItem(String ruta) => Padding(
+        padding: const EdgeInsets.only(right: 12),
+        child: Container(
+          width: 80,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade300,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Image.asset(ruta, fit: BoxFit.contain),
+          ),
+        ),
+      );
 }

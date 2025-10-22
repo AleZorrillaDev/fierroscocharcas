@@ -1,14 +1,13 @@
 {
   "project_info": {
-    "project_number": "314016699507",
-    "firebase_url": "https://dam-fierroscocharcas-default-rtdb.firebaseio.com",
-    "project_id": "dam-fierroscocharcas",
-    "storage_bucket": "dam-fierroscocharcas.firebasestorage.app"
+    "project_number": "946820706303",
+    "project_id": "dam-fierroscocharcas-grupal",
+    "storage_bucket": "dam-fierroscocharcas-grupal.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:314016699507:android:c6b23e35ebec54725c0606",
+        "mobilesdk_app_id": "1:946820706303:android:8641f0e1aa28a8387581ca",
         "android_client_info": {
           "package_name": "com.example.fierroscocharcas"
         }
@@ -16,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBLeVYZ5zc_yxgJQEJnDLeX3aMAlQnogQo"
+          "current_key": "AIzaSyAel1bfMqTF2c4-Sm58H_M8g4p2VzQ9D3I"
         }
       ],
       "services": {
