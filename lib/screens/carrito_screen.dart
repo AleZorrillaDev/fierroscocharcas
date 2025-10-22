@@ -113,7 +113,7 @@ class _CarritoScreenState extends State<CarritoScreen> {
                               contentPadding: const EdgeInsets.all(12),
                               leading: ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
-                                child: Image.asset(
+                                child: Image.network(
                                   item["imagen"],
                                   width: 60,
                                   height: 60,
