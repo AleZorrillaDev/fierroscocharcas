@@ -1,137 +1,90 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'login_screen.dart';
+import 'historial_screen.dart';
 
-class PerfilScreen extends StatelessWidget {
+class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
 
-  Future<Map<String, dynamic>?> _obtenerDatosUsuario() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return null;
+  @override
+  State<PerfilScreen> createState() => _PerfilScreenState();
+}
 
-    final doc =
-        await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).get();
-    return doc.data();
-  }
+class _PerfilScreenState extends State<PerfilScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? _user;
+  Map<String, dynamic>? _userData;
 
   @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
 
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: const Text("Perfil"),
-        backgroundColor: const Color(0xFF6487E4),
-        foregroundColor: Colors.white,
-        elevation: 3,
+  Future<void> _loadUser() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(user.uid)
+          .get();
+      if (doc.exists) {
+        setState(() {
+          _user = user;
+          _userData = doc.data();
+        });
+      }
+    }
+  }
+
+  void _cerrarSesion() async {
+    await _auth.signOut();
+    if (mounted) {
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
+    }
+  }
+
+  Widget _buildInfoRow(String title, String? value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.grey.withOpacity(0.15),
+              blurRadius: 5,
+              offset: const Offset(0, 2))
+        ],
       ),
-      body: FutureBuilder<Map<String, dynamic>?>(
-        future: _obtenerDatosUsuario(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final data = snapshot.data;
-          final nombre = data?['nombre'] ?? 'Usuario';
-          final correo = data?['email'] ?? user?.email ?? '';
-          final numero = data?['numero'] ?? '-';
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Hero(
-                  tag: "avatarPerfil",
-                  child: CircleAvatar(
-                    radius: 55,
-                    backgroundColor: Colors.grey.shade200,
-                    backgroundImage: const AssetImage("lib/assets/marcas/cat.png"),
-                    child: user?.photoURL == null
-                        ? const Icon(Icons.person, size: 60, color: Colors.grey)
-                        : null,
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                Text(
-                  nombre,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 4),
-                Text(correo, style: const TextStyle(color: Colors.black54)),
-                const SizedBox(height: 4),
-                Text('Teléfono: $numero',
-                    style: const TextStyle(color: Colors.black54)),
-
-                const SizedBox(height: 40),
-
-                _opcionPerfil(
-                  context,
-                  Icons.person_outline,
-                  "Editar perfil",
-                  "Función aún no disponible",
-                ),
-                const SizedBox(height: 10),
-                _opcionPerfil(
-                  context,
-                  Icons.settings_outlined,
-                  "Configuraciones",
-                  "Próximamente: ajustes de cuenta",
-                ),
-                const SizedBox(height: 10),
-                _opcionPerfil(
-                  context,
-                  Icons.help_outline,
-                  "Centro de ayuda",
-                  "Próximamente soporte técnico.",
-                ),
-
-                const SizedBox(height: 40),
-
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    await FirebaseAuth.instance.signOut();
-                    if (context.mounted) {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                        (_) => false,
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.logout),
-                  label: const Text("Cerrar sesión"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 14, horizontal: 16),
-                    minimumSize: const Size(double.infinity, 48),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    elevation: 2,
-                  ),
-                ),
-              ],
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black54,
+                  fontWeight: FontWeight.w500),
             ),
-          );
-        },
+          ),
+          Text(
+            value ?? '',
+            style: const TextStyle(fontSize: 16, color: Colors.black87),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _opcionPerfil(BuildContext context, IconData icon, String texto, String mensaje) {
+  Widget _buildMenuOption(
+      {required IconData icon,
+      required String title,
+      required VoidCallback onTap}) {
     return InkWell(
-      onTap: () => _mensajeSnack(context, mensaje),
+      onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
@@ -140,10 +93,9 @@ class PerfilScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            ),
+                color: Colors.grey.withOpacity(0.15),
+                blurRadius: 5,
+                offset: const Offset(0, 2))
           ],
         ),
         child: Row(
@@ -152,12 +104,9 @@ class PerfilScreen extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                texto,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                ),
+                title,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
             ),
             const Icon(Icons.chevron_right, color: Colors.grey),
@@ -167,13 +116,94 @@ class PerfilScreen extends StatelessWidget {
     );
   }
 
-  void _mensajeSnack(BuildContext context, String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-        behavior: SnackBarBehavior.floating,
+  @override
+  Widget build(BuildContext context) {
+    final user = _user;
+    final data = _userData;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F4F6),
+      appBar: AppBar(
+        title: const Text("Perfil"),
         backgroundColor: const Color(0xFF6487E4),
+        elevation: 0,
       ),
+      body: user == null
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // --- ENCABEZADO CON FOTO Y NOMBRE ---
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.grey.withOpacity(0.2),
+                            blurRadius: 5,
+                            offset: const Offset(0, 2))
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundColor: const Color(0xFF6487E4),
+                          child: Text(
+                            user.email != null && user.email!.isNotEmpty
+                                ? user.email![0].toUpperCase()
+                                : "?",
+                            style: const TextStyle(
+                                fontSize: 32, color: Colors.white),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          data?['nombre'] ?? 'Usuario',
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          user.email ?? '',
+                          style: const TextStyle(
+                              fontSize: 16, color: Colors.black54),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // --- DATOS BÁSICOS ---
+                  _buildInfoRow("Teléfono", data?['telefono']),
+                  _buildInfoRow("Dirección", data?['direccion']),
+
+                  const SizedBox(height: 20),
+
+                  // --- OPCIONES DEL PERFIL ---
+                  _buildMenuOption(
+                    icon: Icons.history,
+                    title: "Historial de compras",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const HistorialScreen()),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _buildMenuOption(
+                    icon: Icons.logout,
+                    title: "Cerrar sesión",
+                    onTap: _cerrarSesion,
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }
