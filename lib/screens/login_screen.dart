@@ -1,3 +1,4 @@
+//lib\screens\login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -33,6 +34,9 @@ class _LoginScreenState extends State<LoginScreen> {
           .doc(uid)
           .get();
 
+      // ✅ Corrección: Verificamos mounted antes de usar context
+      if (!mounted) return;
+
       if (!usuarioSnap.exists) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -56,9 +60,13 @@ class _LoginScreenState extends State<LoginScreen> {
         'wrong-password' => 'Contraseña incorrecta.',
         _ => 'Error al iniciar sesión.',
       };
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),
-      );
+      
+      // ✅ Corrección: Verificamos mounted antes de usar context
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),
+        );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

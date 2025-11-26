@@ -65,7 +65,7 @@ class _ProductosScreenState extends State<ProductosScreen> {
         await carritoRef.doc(doc.id).update({'cantidad': current + 1});
       } else {
         await carritoRef.add({
-          'productoId': producto['id'] ?? null,
+          'productoId': producto['id'],
           'nombre': producto['nombre'],
           'precio': _toDouble(producto['precio']),
           'cantidad': 1,
@@ -252,9 +252,9 @@ class _ProductosScreenState extends State<ProductosScreen> {
             builder: (context, snap) {
               int totalUnits = 0;
               if (snap.hasData) {
-                totalUnits = snap.data!.docs.fold<int>(0, (sum, d) {
+                totalUnits = snap.data!.docs.fold<int>(0, (totalAcumulado, d) {
                   final data = d.data() as Map<String, dynamic>;
-                  return sum + ((data['cantidad'] ?? 1) as int);
+                  return totalAcumulado + ((data['cantidad'] ?? 1) as int);
                 });
               }
 

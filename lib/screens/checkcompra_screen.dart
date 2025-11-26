@@ -204,7 +204,7 @@ class _CheckCompraScreenState extends State<CheckCompraScreen> {
                                 style: TextStyle(fontSize: 15))),
                         Switch(
                           value: envioPrioritario,
-                          activeColor: Colors.black,
+                          activeTrackColor: Colors.black,
                           onChanged: (v) =>
                               setState(() => envioPrioritario = v),
                         ),

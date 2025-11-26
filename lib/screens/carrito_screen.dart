@@ -15,7 +15,7 @@ class _CarritoScreenState extends State<CarritoScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  bool _processing = false;
+  //bool _processing = false;
 
   Stream<QuerySnapshot> _carritoStream() {
     final user = _auth.currentUser;

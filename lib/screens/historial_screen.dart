@@ -212,7 +212,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
                           subtitle: Text('Cantidad: $cantidad'),
                           trailing: Text('S/. ${precio.toStringAsFixed(2)}'),
                         );
-                      }).toList(),
+                      }),
                     const SizedBox(height: 8),
                   ],
                 ),

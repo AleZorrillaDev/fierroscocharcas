@@ -1,3 +1,4 @@
+// lib\screens\register_screen.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -32,7 +33,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       final uid = userCredential.user!.uid;
 
-      // 🔹 Guardar datos en Cloud Firestore (en lugar de Realtime Database)
       await FirebaseFirestore.instance.collection('usuarios').doc(uid).set({
         'nombre': _nombre.text.trim(),
         'email': _email.text.trim(),
@@ -41,6 +41,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'fechaRegistro': FieldValue.serverTimestamp(),
       });
 
+      // ✅ Corrección: Verificamos mounted antes de usar context
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -54,9 +55,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'invalid-email' => 'Correo inválido.',
         _ => 'Error al registrar usuario.',
       };
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),
-      );
+      
+      // ✅ Corrección: Verificamos mounted antes de usar context
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),
+        );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
