@@ -381,7 +381,7 @@ class _ProductosScreenState extends State<ProductosScreen> {
                                   width: double.infinity,
                                   child: ElevatedButton(
                                     onPressed: () => _agregarAlCarrito(producto),
-                                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6487E4), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 255, 255, 255), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                                     child: const Text('Agregar'),
                                   ),
                                 ),

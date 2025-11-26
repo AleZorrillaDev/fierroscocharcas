@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+
 import 'productos_screen.dart';
-import 'carrito_screen.dart';
 import 'perfil_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,10 +16,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _index = 0;
 
+  // 👉 Ya no incluimos CarritoScreen aquí
   final List<Widget> _pages = const [
     HomeTab(),
     ProductosScreen(),
-    CarritoScreen(),
     PerfilScreen(),
   ];
 
@@ -35,10 +35,18 @@ class _HomeScreenState extends State<HomeScreen> {
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Inicio"),
-          BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), label: "Productos"),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: "Carrito"),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Perfil"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_filled),
+            label: "Inicio",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.storefront_outlined),
+            label: "Productos",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: "Perfil",
+          ),
         ],
       ),
     );
@@ -60,11 +68,9 @@ class _HomeTabState extends State<HomeTab> {
   String? _locationError;
   GoogleMapController? _mapController;
 
-  // Ubicación fija de la tienda (proporcionada por el link)
-  // Link: https://www.google.com/maps/@-12.1058637,-75.1874083,...
+  // Ubicación fija de la tienda
   final LatLng _ubicacionTienda = const LatLng(-12.1058637, -75.1874083);
 
-  // Distancia en km (opcional)
   double? _distanciaKm;
 
   @override
@@ -110,9 +116,10 @@ class _HomeTabState extends State<HomeTab> {
         return;
       }
 
-      final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+      final pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best,
+      );
 
-      // calcular distancia a la tienda en km
       final distanceMeters = Geolocator.distanceBetween(
         pos.latitude,
         pos.longitude,
@@ -146,15 +153,19 @@ class _HomeTabState extends State<HomeTab> {
   void _centrarEnUsuario() {
     if (_posicionActual != null && _mapController != null) {
       _mapController!.animateCamera(
-        CameraUpdate.newLatLngZoom(LatLng(_posicionActual!.latitude, _posicionActual!.longitude), 15),
+        CameraUpdate.newLatLngZoom(
+          LatLng(_posicionActual!.latitude, _posicionActual!.longitude),
+          15,
+        ),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ubicación no disponible')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ubicación no disponible')),
+      );
     }
   }
 
   Widget _buildMapPreview() {
-    // Si aún está cargando
     if (_loadingLocation) {
       return Container(
         height: 180,
@@ -163,7 +174,6 @@ class _HomeTabState extends State<HomeTab> {
       );
     }
 
-    // Si hubo error en permisos o servicio
     if (_locationError != null) {
       return Container(
         height: 180,
@@ -179,11 +189,17 @@ class _HomeTabState extends State<HomeTab> {
               children: [
                 const Icon(Icons.location_off, size: 42, color: Colors.black26),
                 const SizedBox(height: 8),
-                Text(_locationError!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.black54)),
+                Text(
+                  _locationError!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.black54),
+                ),
                 const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: _obtenerUbicacion,
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6487E4)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6487E4),
+                  ),
                   child: const Text('Reintentar'),
                 ),
               ],
@@ -193,8 +209,10 @@ class _HomeTabState extends State<HomeTab> {
       );
     }
 
-    // Si hay ubicación, mostramos GoogleMap pequeño (preview)
-    final initial = LatLng(_posicionActual!.latitude, _posicionActual!.longitude);
+    final initial = LatLng(
+      _posicionActual!.latitude,
+      _posicionActual!.longitude,
+    );
 
     return SizedBox(
       height: 180,
@@ -209,8 +227,16 @@ class _HomeTabState extends State<HomeTab> {
               myLocationButtonEnabled: false,
               zoomControlsEnabled: false,
               markers: {
-                Marker(markerId: const MarkerId('tienda'), position: _ubicacionTienda, infoWindow: const InfoWindow(title: 'Fierros Cocharcas')),
-                Marker(markerId: const MarkerId('usuario'), position: initial, infoWindow: const InfoWindow(title: 'Tu ubicación')),
+                Marker(
+                  markerId: const MarkerId('tienda'),
+                  position: _ubicacionTienda,
+                  infoWindow: const InfoWindow(title: 'Fierros Cocharcas'),
+                ),
+                Marker(
+                  markerId: const MarkerId('usuario'),
+                  position: initial,
+                  infoWindow: const InfoWindow(title: 'Tu ubicación'),
+                ),
               },
             ),
             Positioned(
@@ -228,7 +254,6 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  /// Componente para mostrar las marcas (igual que antes)
   Widget marcaItem(String ruta) => Padding(
         padding: const EdgeInsets.only(right: 12),
         child: Container(
@@ -294,7 +319,10 @@ class _HomeTabState extends State<HomeTab> {
                     height: 180,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.black.withOpacity(0.4), Colors.transparent],
+                        colors: [
+                          Colors.black.withOpacity(0.4),
+                          Colors.transparent
+                        ],
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                       ),
@@ -308,7 +336,13 @@ class _HomeTabState extends State<HomeTab> {
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        shadows: [Shadow(blurRadius: 6, color: Colors.black54, offset: Offset(1, 1))],
+                        shadows: [
+                          Shadow(
+                            blurRadius: 6,
+                            color: Colors.black54,
+                            offset: Offset(1, 1),
+                          )
+                        ],
                       ),
                     ),
                   ),
@@ -318,18 +352,19 @@ class _HomeTabState extends State<HomeTab> {
 
             const SizedBox(height: 18),
 
-            // ===== MAP PREVIEW: colocado antes de "Marcas destacadas" =====
             const Text(
               "Mi ubicación y tienda",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
 
-            // Mostrar distancia si está disponible
             if (_distanciaKm != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text('Estás a ${_distanciaKm!.toStringAsFixed(2)} km de nuestra tienda 🏪', style: TextStyle(color: Colors.grey[700])),
+                child: Text(
+                  'Estás a ${_distanciaKm!.toStringAsFixed(2)} km de nuestra tienda 🏪',
+                  style: TextStyle(color: Colors.grey[700]),
+                ),
               ),
 
             _buildMapPreview(),
@@ -342,7 +377,6 @@ class _HomeTabState extends State<HomeTab> {
             ),
             const SizedBox(height: 12),
 
-            // Marcas horizontales
             SizedBox(
               height: 60,
               child: ListView(
@@ -363,7 +397,6 @@ class _HomeTabState extends State<HomeTab> {
             ),
             const SizedBox(height: 12),
 
-            // Productos destacados (visual)
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -400,7 +433,9 @@ class _HomeTabState extends State<HomeTab> {
                     children: [
                       Expanded(
                         child: ClipRRect(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
                           child: Image.asset(
                             "lib/assets/productos/product.png",
                             fit: BoxFit.cover,
@@ -415,13 +450,15 @@ class _HomeTabState extends State<HomeTab> {
                           children: [
                             Text(
                               p["nombre"]!,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 4),
                             Text(
                               "S/. ${p["precio"]}",
-                              style: const TextStyle(color: Colors.black54),
+                              style:
+                                  const TextStyle(color: Colors.black54),
                             ),
                           ],
                         ),
