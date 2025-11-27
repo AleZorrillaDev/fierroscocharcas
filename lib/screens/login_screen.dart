@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
+import 'admin_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +14,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
@@ -20,53 +23,53 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
+
     setState(() => _loading = true);
 
     try {
-      final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      // 1. Iniciar sesión en Auth
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: _email.text.trim(),
         password: _password.text.trim(),
       );
 
-      final uid = cred.user!.uid;
-      final usuarioSnap = await FirebaseFirestore.instance
-          .collection('usuarios')
-          .doc(uid)
-          .get();
-
-      // ✅ Corrección: Verificamos mounted antes de usar context
       if (!mounted) return;
 
-      if (!usuarioSnap.exists) {
+      // 2. Obtener datos del usuario desde Firestore para ver su ROL
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(userCredential.user!.uid)
+          .get();
+
+      if (!mounted) return;
+
+      if (userDoc.exists) {
+        String rol = userDoc.get('rol') ?? 'cliente';
+
+        if (rol == 'admin') {
+          // 🚀 Si es admin, vamos al Panel Web
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const AdminScreen()),
+          );
+        } else {
+          // 🛒 Si es cliente, vamos a la Tienda
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          );
+        }
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cuenta sin datos de usuario.'),
-            backgroundColor: Colors.redAccent,
-          ),
+          const SnackBar(content: Text("Error: Usuario no encontrado en base de datos")),
         );
-        await FirebaseAuth.instance.signOut();
-        return;
       }
 
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-      }
     } on FirebaseAuthException catch (e) {
-      final msg = switch (e.code) {
-        'user-not-found' => 'Usuario no encontrado.',
-        'wrong-password' => 'Contraseña incorrecta.',
-        _ => 'Error al iniciar sesión.',
-      };
-      
-      // ✅ Corrección: Verificamos mounted antes de usar context
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),
-        );
-      }
+      // ... (tu manejo de errores existente)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Error de autenticación')),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }

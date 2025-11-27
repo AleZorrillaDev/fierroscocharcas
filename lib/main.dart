@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'screens/splash_screen.dart';
+import 'firebase_options.dart'; // 🔥 1. IMPORTANTE: Importamos la configuración generada
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    await Firebase.initializeApp();
+    // 🔥 2. IMPORTANTE: Le decimos a Firebase qué opciones usar según la plataforma (Web/Android)
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform, 
+    );
+    
     runApp(const FierrosCocharcasApp());
   } catch (e) {
     debugPrint('❌ Error al inicializar Firebase: $e');
@@ -67,7 +72,7 @@ class FirebaseErrorApp extends StatelessWidget {
                 ),
                 SizedBox(height: 8),
                 Text(
-                  'Verifica tu conexión o el archivo google-services.json',
+                  'Verifica tu conexión o la configuración web',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white70,

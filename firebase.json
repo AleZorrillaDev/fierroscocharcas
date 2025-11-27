@@ -1,0 +1,39 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "dam-fierroscocharcas-grupal",
+          "appId": "1:946820706303:android:8641f0e1aa28a8387581ca",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "dam-fierroscocharcas-grupal",
+          "configurations": {
+            "android": "1:946820706303:android:8641f0e1aa28a8387581ca",
+            "ios": "1:946820706303:ios:9263149e6b5b9e847581ca",
+            "macos": "1:946820706303:ios:9263149e6b5b9e847581ca",
+            "web": "1:946820706303:web:9c2d7502e08f3ed27581ca",
+            "windows": "1:946820706303:web:5619523c81efa0cb7581ca"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

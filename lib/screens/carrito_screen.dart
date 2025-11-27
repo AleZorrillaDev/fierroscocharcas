@@ -317,6 +317,20 @@ class _CarritoScreenState extends State<CarritoScreen> {
                     // 👉 BOTÓN que abre Checkout (CORRECTO)
                     ElevatedButton.icon(
                       onPressed: () {
+                        // 1. Preparamos la lista de productos limpia para enviarla
+                        final List<Map<String, dynamic>> listaParaEnviar = docs.map((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          return {
+                            'id': doc.id,
+                            'nombre': data['nombre'] ?? 'Producto',
+                            'cantidad': data['cantidad'] ?? 1,
+                            'precio': (data['precio'] ?? 0).toDouble(),
+                            // Agregamos imagen por si quieres mostrarla en el resumen luego
+                            'imagen': data['imagen'] ?? '', 
+                          };
+                        }).toList();
+
+                        // 2. Navegamos pasando esa lista
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -324,23 +338,19 @@ class _CarritoScreenState extends State<CarritoScreen> {
                               totalProductos: total,
                               envio: 5.00,
                               recargo: 0.00,
+                              productos: listaParaEnviar, // 🔥 AQUÍ ESTÁ LA CLAVE
                             ),
                           ),
                         );
                       },
-                      icon:
-                          const Icon(Icons.payments_outlined),
-                      label: const Text(
-                          'Continuar con el pago'),
+                      icon: const Icon(Icons.payments_outlined),
+                      label: const Text('Continuar con el pago'),
                       style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color(0xFF6487E4),
-                          padding:
-                              const EdgeInsets.symmetric(
-                                  vertical: 14),
-                          shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(10))),
+                        backgroundColor: const Color(0xFF6487E4),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
                     ),
 
                     const SizedBox(height: 8),

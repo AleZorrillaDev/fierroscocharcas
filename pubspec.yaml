@@ -18,6 +18,8 @@ dependencies:
   geolocator: ^13.0.1
   google_maps_flutter: ^2.6.1
   url_launcher: ^6.3.1
+  image_picker: ^1.1.2
+  fl_chart: ^0.66.2
 
 
 dev_dependencies:
